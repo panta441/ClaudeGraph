@@ -1,0 +1,13 @@
+﻿run_id,strict_object_count,candidate_fragment_count,raw_anchor_hits,windows,history_jsonl,session_jsonl_graph,assistant_response,account_identity,oauth_credentials,runtime_session_state,capability_surface,tool_use,tool_result,api_metrics_debug,memory_reconstruction_outcome,strict_classes
+CLAUDE-WIN-A-PROMPT-NOTOOL-R01,14,56,1209,78,E,E,P,E,N,E,P,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-READ-FILE-R01,15,52,1205,71,E,E,P,E,E,E,P,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-EDIT-FILE-R01,14,47,1200,66,E,E,P,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-SHELL-COMMAND-R01,14,56,1230,75,E,E,P,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-MULTIFILE-CREATE-R01,18,63,1266,94,E,E,P,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-SETTINGS-READ-R01,12,59,1186,79,E,E,P,E,E,E,P,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-CLAUDEMD-R01,12,46,1441,65,E,E,P,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-MCP-BENIGN-R01,15,65,1354,88,E,E,P,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-HOOK-BENIGN-R01,12,51,1200,69,N,E,N,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-WEBFETCH-BENIGN-R01,13,48,1085,69,E,E,N,E,E,E,N,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+CLAUDE-WIN-A-SKILL-BENIGN-R01,14,43,1169,60,E,E,P,E,E,E,P,P,P,E,Partial,account_identity;api_metrics_debug;history_jsonl;oauth_credentials;runtime_session_state;session_jsonl_graph
+

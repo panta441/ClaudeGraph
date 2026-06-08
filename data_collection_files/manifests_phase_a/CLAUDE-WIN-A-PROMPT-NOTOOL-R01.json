@@ -1,0 +1,150 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-PROMPT-NOTOOL-R01",
+    "run_id":  "CLAUDE-WIN-A-PROMPT-NOTOOL-R01",
+    "description":  "Zero-tool interaction: isolate the minimal .claude session and history artifacts created by a single text-only prompt-response cycle.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "PROMPT-NOTOOL",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+
+                   ],
+    "launch_flags":  "",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  false,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_prompt_notool",
+    "controlled_prompt":  "Explain in one sentence what a Windows Registry hive is. Do not inspect files or run commands. Include the exact string CLAUDE_WIN_A_PROMPT_NOTOOL_R01 in your response.",
+    "markers":  [
+                    "CLAUDE_WIN_A_PROMPT_NOTOOL_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_prompt_notool\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               "history.jsonl entry (recoverable marker in response)"
+                           ],
+    "expected_host_effects":  [
+                                  "claude.exe / node.exe process spawned; no child processes expected.",
+                                  "No project file modification expected.",
+                                  ".claude\\projects\\ entry created or updated.",
+                                  "history.jsonl gains one entry containing prompt text and response."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-PROMPT-NOTOOL-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-PROMPT-NOTOOL-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "PROMPT-NOTOOL",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Characterize the minimal artifact footprint of a single text-only Claude Code session.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_prompt_notool",
+                                "LAUNCH_FLAGS":  "",
+                                "COMMAND_TYPED":  "claude",
+                                "PROMPT1_TEXT":  "Explain in one sentence what a Windows Registry hive is. Do not inspect files or run commands. Include the exact string CLAUDE_WIN_A_PROMPT_NOTOOL_R01 in your response.",
+                                "EXPECTED_BOUNDARY_RESULT":  "No project write; no tool call.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-PROMPT-NOTOOL-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-PROMPT-NOTOOL-R01-POSTCOLLECTION"
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "Run this first. No tool calls should fire. Establishes the minimal artifact baseline: history.jsonl entry, session directory, .claude.json update. Use this as the reference against which all other Phase A experiments are diffed.",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-PROMPT-NOTOOL-R01.json",
+    "probe_or_scenario":  "PROMPT-NOTOOL"
+}

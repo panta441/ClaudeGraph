@@ -1,0 +1,156 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-EDIT-FILE-R01",
+    "run_id":  "CLAUDE-WIN-A-EDIT-FILE-R01",
+    "description":  "Single file write: isolate artifacts produced by the Write/Edit tool call on one existing file.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "EDIT-FILE",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+
+                   ],
+    "launch_flags":  "",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  true,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_edit_file",
+    "controlled_prompt":  "Edit app.py so that its print statement outputs exactly the string CLAUDE_WIN_EDIT_MARKER_R01. Do not run tests or shell commands.",
+    "markers":  [
+                    "CLAUDE_WIN_EDIT_MARKER_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_edit_file\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               "Procmon PML",
+                               "Modified app.py in project copy",
+                               "Sysmon Event 11 on app.py",
+                               "Procmon file-write event"
+                           ],
+    "expected_host_effects":  [
+                                  "Write/Edit tool call fires on app.py.",
+                                  "app.py content is modified to include marker string.",
+                                  "Sysmon Event 11 (FileCreate/Write) expected on app.py.",
+                                  "Procmon shows write event on app.py by node.exe.",
+                                  "Permission prompt likely; record text and decision."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-EDIT-FILE-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-EDIT-FILE-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "EDIT-FILE",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Characterize the artifact footprint of a single file-write tool call.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_edit_file",
+                                "LAUNCH_FLAGS":  "",
+                                "COMMAND_TYPED":  "claude",
+                                "PROMPT1_TEXT":  "Edit app.py so that its print statement outputs exactly the string CLAUDE_WIN_EDIT_MARKER_R01. Do not run tests or shell commands.",
+                                "EXPECTED_BOUNDARY_RESULT":  "Single file write inside project directory; permission prompt expected.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-EDIT-FILE-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-EDIT-FILE-R01-POSTCOLLECTION",
+                                "PROJECT_SETUP_REQUIRED":  "Create app.py in project root with content: print(\u0027placeholder\u0027)"
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "Project must contain app.py with a placeholder print statement. Permission prompt expected (Write tool). Record exact permission prompt text and decision. Procmon should show file-write event.",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-EDIT-FILE-R01.json",
+    "project_setup":  "Create app.py in project root with content: print(\u0027placeholder\u0027)",
+    "probe_or_scenario":  "EDIT-FILE"
+}

@@ -1,0 +1,250 @@
+{
+  "experiment_id": "CLAUDE-WIN-A-MCP-BENIGN-R01",
+  "run_id": "CLAUDE-WIN-A-MCP-BENIGN-R01",
+  "description": "Benign MCP tool invocation: register a local stdio MCP server that exposes a single tool named lab_marker, then ask Claude Code to call it by name. Characterize MCP configuration, MCP server process creation, tool invocation records, memory recoverability, and resulting response marker.",
+  "phase": "A",
+  "run_type": "Baseline",
+  "probe_or_scenario": "MCP-BENIGN",
+  "scenario": "MCP-BENIGN",
+  "config": "R01",
+  "run_number": 1,
+  "baseline_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "restore_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "depends_on": [],
+  "compare_against": [],
+  "state_carryover_from": null,
+  "revert_before_run": true,
+  "launch_flags": "",
+  "launch_command": "claude",
+  "interactive": true,
+  "vm": {
+    "name": "",
+    "windows_version": "",
+    "windows_build": "",
+    "username": "",
+    "timezone": "",
+    "cpu_ram": "8GB",
+    "disk_size": "",
+    "hypervisor": "VMware Workstation",
+    "network_mode": "record-exact-mode"
+  },
+  "instrumentation": {
+    "sysmon": true,
+    "procmon": true,
+    "tshark": true,
+    "memory_snapshot": true,
+    "collect_dot_claude": true,
+    "collect_project": true,
+    "collect_windows_logs": true,
+    "collect_network": true,
+    "collect_powershell_history": true,
+    "collect_hashes": true,
+    "tshark_interface": 1,
+    "tshark_path": "C:\\Program Files\\Wireshark\\tshark.exe"
+  },
+  "project_path": "C:\\AgentForensics\\projects\\a_mcp_benign",
+  "mcp": {
+    "server_name": "lab_marker_server",
+    "tool_name": "lab_marker",
+    "expected_tool_event_name": "mcp__lab_marker_server__lab_marker",
+    "transport": "stdio",
+    "scope": "user",
+    "server_script_path": "C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py",
+    "python_executable": "C:\\AgentForensics\\venvs\\mcp-lab\\Scripts\\python.exe",
+    "registration_command": "claude mcp add --transport stdio --scope user lab_marker_server -- \"C:\\AgentForensics\\venvs\\mcp-lab\\Scripts\\python.exe\" \"C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py\"",
+    "verification_commands": [
+      "claude mcp list",
+      "claude mcp get lab_marker_server",
+      "/mcp inside Claude Code interactive session"
+    ]
+  },
+  "controlled_prompt": "Use the MCP tool lab_marker from the lab_marker_server server. Do not answer from memory. Call the tool and report the exact marker value returned by the tool.",
+  "prompts": [
+    {
+      "id": "PROMPT1",
+      "text": "Use the MCP tool lab_marker from the lab_marker_server server. Do not answer from memory. Call the tool and report the exact marker value returned by the tool.",
+      "expected_effect": "Claude invokes the local stdio MCP tool and reports CLAUDE_MCP_MARKER_R01."
+    }
+  ],
+  "markers": [
+    "CLAUDE_MCP_MARKER_R01",
+    "lab_marker",
+    "lab_marker_server",
+    "mcp__lab_marker_server__lab_marker",
+    "mcp_server.py"
+  ],
+  "expected_artifacts": [
+    "%USERPROFILE%\\.claude\\ (full directory)",
+    "%USERPROFILE%\\.claude.json containing user-scoped mcpServers entry, if stored there by this Claude Code version",
+    "C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py in project copy",
+    "C:\\AgentForensics\\projects\\a_mcp_benign\\ evidence project copy",
+    "Windows Sysmon EVTX",
+    "Security, System, Application, and PowerShell EVTX",
+    "ConsoleHost_history.txt",
+    "netstat snapshots pre/post",
+    "DNS cache pre/post",
+    "tshark pcap",
+    "Procmon PML",
+    "Memory snapshot taken while Claude Code remains open",
+    "MCP server process creation event for python.exe",
+    "Possible .claude session/project artifact containing MCP tool_use entry",
+    "Response/session/memory evidence containing CLAUDE_MCP_MARKER_R01"
+  ],
+  "expected_host_effects": [
+    "Claude Code process launches from the project directory.",
+    "A local MCP server process is spawned using python.exe and mcp_server.py.",
+    "Sysmon Event ID 1 should show python.exe command line containing mcp_server.py.",
+    "The MCP server process parent is expected to be the Claude Code runtime process, commonly node.exe or a related Claude process.",
+    "No project file write is expected from the MCP tool itself; the tool returns a marker only.",
+    "The response should include CLAUDE_MCP_MARKER_R01."
+  ],
+  "expected_network_effects": [
+    "TLS connection to Claude/Anthropic API endpoint is expected.",
+    "No external network connection should be required for the MCP server itself because this is a local stdio server.",
+    "Check pcap for unexpected outbound destinations."
+  ],
+  "memory_snapshot": {
+    "required": true,
+    "timing": "after AGENT_DONE_VM_TIME while Claude Code is still open and before Claude exit",
+    "expected_snapshot_name": "SNAP-CLAUDE-WIN-A-MCP-BENIGN-R01-MEMORY",
+    "strings_to_search": [
+      "CLAUDE_MCP_MARKER_R01",
+      "lab_marker",
+      "lab_marker_server",
+      "mcp__lab_marker_server__lab_marker",
+      "mcp_server.py",
+      "C:\\AgentForensics\\projects\\a_mcp_benign"
+    ]
+  },
+  "dirty_snapshot": {
+    "required": false,
+    "timing": "after instrumentation stop and evidence package creation",
+    "expected_snapshot_name": "DIRTY-CLAUDE-WIN-A-MCP-BENIGN-R01-POSTCOLLECTION",
+    "purpose": "Optional post-collection debug snapshot; not the primary memory evidence."
+  },
+  "ground_truth_static": {
+    "RUN_ID": "CLAUDE-WIN-A-MCP-BENIGN-R01",
+    "TYPE": "Baseline",
+    "PROBE_OR_SCENARIO": "MCP-BENIGN",
+    "TOOL": "ClaudeCode",
+    "OBJECTIVE": "Characterize the process, configuration, session-log, memory, and host artifacts of a local stdio MCP tool invocation.",
+    "SNAPSHOT": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "PROJECT_PATH": "C:\\AgentForensics\\projects\\a_mcp_benign",
+    "LAUNCH_FLAGS": "",
+    "COMMAND_TYPED": "claude",
+    "PROMPT1_TEXT": "Use the MCP tool lab_marker from the lab_marker_server server. Do not answer from memory. Call the tool and report the exact marker value returned by the tool.",
+    "EXPECTED_BOUNDARY_RESULT": "Local stdio MCP tool call; MCP server should not require external network.",
+    "EXPECTED_MEMORY_SNAPSHOT_NAME": "SNAP-CLAUDE-WIN-A-MCP-BENIGN-R01-MEMORY",
+    "EXPECTED_DIRTY_SNAPSHOT_NAME": "DIRTY-CLAUDE-WIN-A-MCP-BENIGN-R01-POSTCOLLECTION",
+    "MCP_SERVER_NAME": "lab_marker_server",
+    "MCP_TOOL_NAME": "lab_marker",
+    "EXPECTED_MCP_TOOL_EVENT_NAME": "mcp__lab_marker_server__lab_marker",
+    "MCP_TRANSPORT": "stdio",
+    "MCP_SCOPE": "user",
+    "MCP_SERVER_SCRIPT": "C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py",
+    "MCP_PYTHON_EXE": "C:\\AgentForensics\\venvs\\mcp-lab\\Scripts\\python.exe",
+    "EXPECTED_RESPONSE_MARKER": "CLAUDE_MCP_MARKER_R01"
+  },
+  "ground_truth_dynamic_fields_expected": [
+    "VM_TIME_BEFORE",
+    "INSTRUMENTATION_START_VM_TIME",
+    "PROBE_START_VM_TIME",
+    "CLAUDE_LAUNCH_VM_TIME",
+    "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+    "PROMPT1_SUBMITTED_VM_TIME",
+    "PERMISSION_PROMPT_SEEN",
+    "PERMISSION_PROMPT_VM_TIME",
+    "PERMISSION_PROMPT_TEXT",
+    "PERMISSION_DECISION",
+    "AGENT_DONE_VM_TIME",
+    "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+    "MEMORY_SNAPSHOT_NAME",
+    "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+    "CLAUDE_EXIT_VM_TIME",
+    "INSTRUMENTATION_STOP_VM_TIME",
+    "VM_TIME_AFTER",
+    "PCAP_PATH",
+    "PCAP_COLLECTED",
+    "PROCMON_PML_PATH",
+    "PROCMON_PML_COLLECTED",
+    "EVIDENCE_ZIP_PATH",
+    "EVIDENCE_ZIP_SHA256",
+    "DIRTY_SNAPSHOT_NAME",
+    "DIRTY_SNAPSHOT_VM_TIME"
+  ],
+  "operator_checkpoints": [
+    {
+      "key": "MCP_SETUP_VERIFIED",
+      "instruction": "Before starting instrumentation, verify mcp_server.py exists, the MCP Python venv exists, and `claude mcp list` shows lab_marker_server."
+    },
+    {
+      "key": "CLAUDE_LAUNCH_VM_TIME",
+      "instruction": "Open a terminal in C:\\AgentForensics\\projects\\a_mcp_benign, type `claude`, and press Enter here immediately after launching Claude."
+    },
+    {
+      "key": "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+      "instruction": "Press Enter when the Claude prompt is visible and ready for input."
+    },
+    {
+      "key": "PROMPT1_SUBMITTED_VM_TIME",
+      "instruction": "Paste PROMPT1 into Claude and press Enter here immediately after submitting it."
+    },
+    {
+      "key": "PERMISSION_PROMPT",
+      "instruction": "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+    },
+    {
+      "key": "AGENT_DONE_VM_TIME",
+      "instruction": "Press Enter when Claude has completed the MCP tool call. Keep Claude open."
+    },
+    {
+      "key": "MEMORY_SNAPSHOT",
+      "instruction": "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+    },
+    {
+      "key": "CLAUDE_EXIT_VM_TIME",
+      "instruction": "Exit Claude gracefully, then press Enter."
+    }
+  ],
+  "setup_prereqs": [
+    "Create C:\\AgentForensics\\projects\\a_mcp_benign.",
+    "Create Python virtual environment at C:\\AgentForensics\\venvs\\mcp-lab.",
+    "Install MCP SDK with: python -m pip install \"mcp[cli]\".",
+    "Create mcp_server.py exposing the lab_marker tool.",
+    "Register the server with Claude Code using the mcp.registration_command field.",
+    "Verify registration with `claude mcp list` and `claude mcp get lab_marker_server`.",
+    "Start experiment only after the server appears available to Claude Code."
+  ],
+  "project_setup": {
+    "directory": "C:\\AgentForensics\\projects\\a_mcp_benign",
+    "files": [
+      {
+        "path": "C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py",
+        "description": "Local stdio MCP server exposing lab_marker."
+      }
+    ],
+    "mcp_server_py": "from mcp.server.fastmcp import FastMCP\n\nmcp = FastMCP(\"lab_marker_server\")\n\n@mcp.tool()\ndef lab_marker() -> dict[str, str]:\n    \"\"\"Return the controlled marker for the Claude Code MCP benign experiment.\"\"\"\n    return {\"marker\": \"CLAUDE_MCP_MARKER_R01\"}\n\nif __name__ == \"__main__\":\n    mcp.run(transport=\"stdio\")\n"
+  },
+  "config_diff": {
+    "mcpServers.lab_marker_server.scope": "user",
+    "mcpServers.lab_marker_server.transport": "stdio",
+    "mcpServers.lab_marker_server.command": "C:\\AgentForensics\\venvs\\mcp-lab\\Scripts\\python.exe",
+    "mcpServers.lab_marker_server.args": [
+      "C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py"
+    ],
+    "expected_config_artifact": "%USERPROFILE%\\.claude.json for user scope, or version-dependent Claude MCP config location"
+  },
+  "attribution_target": {
+    "question": "Can the investigator distinguish MCP-server-originated marker return from normal Claude text generation?",
+    "primary_sources": [
+      "MCP config artifact",
+      "Sysmon Event ID 1 for python.exe MCP server process",
+      ".claude session/tool_use artifacts",
+      "memory strings for tool/server/marker",
+      "response text"
+    ]
+  },
+  "notes": "REQUIRED SETUP before run:\n1. Create a minimal stdio MCP server at C:\\AgentForensics\\projects\\a_mcp_benign\\mcp_server.py.\n2. The server must expose tool name: lab_marker.\n3. The tool must return marker: CLAUDE_MCP_MARKER_R01.\n4. Register it with Claude Code using user scope and absolute Python/server paths.\n5. Do not print debug text to stdout from the MCP server because stdio is used for protocol messages.\nForensic questions:\n- Does the MCP server process appear in Sysmon as python.exe?\n- Is the MCP config recoverable from %USERPROFILE%\\.claude.json or related Claude config files?\n- Does .claude session/project history record the MCP tool_use/tool_result?\n- Are lab_marker, lab_marker_server, and CLAUDE_MCP_MARKER_R01 recoverable from process memory?",
+  "script_schema": "vmrun_automation_v1",
+  "manifest_file": "manifests/CLAUDE-WIN-A-MCP-BENIGN-R01.json"
+}

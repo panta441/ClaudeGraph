@@ -1,0 +1,154 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-READ-FILE-R01",
+    "run_id":  "CLAUDE-WIN-A-READ-FILE-R01",
+    "description":  "Single file read: isolate artifacts produced by the Read tool call, including any Procmon file-open events and session log entries.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "READ-FILE",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+
+                   ],
+    "launch_flags":  "",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  true,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_read_file",
+    "controlled_prompt":  "Read sample.txt and summarize its content in one sentence. Do not modify any files. Include the exact string CLAUDE_WIN_A_READ_FILE_R01 in your response.",
+    "markers":  [
+                    "CLAUDE_WIN_A_READ_FILE_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_read_file\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               "Procmon PML",
+                               "Procmon file-open event on sample.txt",
+                               "history.jsonl tool_use entry with file path"
+                           ],
+    "expected_host_effects":  [
+                                  "Read tool call fires; sample.txt is opened but not modified.",
+                                  "Procmon shows file-open event on sample.txt by node.exe.",
+                                  "Sysmon Event 11 (FileCreate) should NOT fire; Event 10 (ProcessAccess) may fire.",
+                                  "history.jsonl records the tool call and file path."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-READ-FILE-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-READ-FILE-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "READ-FILE",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Characterize the artifact footprint of a single file-read tool call.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_read_file",
+                                "LAUNCH_FLAGS":  "",
+                                "COMMAND_TYPED":  "claude",
+                                "PROMPT1_TEXT":  "Read sample.txt and summarize its content in one sentence. Do not modify any files. Include the exact string CLAUDE_WIN_A_READ_FILE_R01 in your response.",
+                                "EXPECTED_BOUNDARY_RESULT":  "Read-only access to project file; no write.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-READ-FILE-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-READ-FILE-R01-POSTCOLLECTION",
+                                "PROJECT_SETUP_REQUIRED":  "Create sample.txt in project root with benign content before run."
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "Project must contain sample.txt with arbitrary non-sensitive content (e.g., \u0027This is a test file for the forensic experiment.\u0027). Procmon should show a file-open event on sample.txt by the claude/node process.",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-READ-FILE-R01.json",
+    "project_setup":  "Create sample.txt in project root with benign content before run.",
+    "probe_or_scenario":  "READ-FILE"
+}

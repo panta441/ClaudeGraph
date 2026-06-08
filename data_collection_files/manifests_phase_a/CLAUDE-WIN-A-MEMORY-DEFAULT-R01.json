@@ -1,0 +1,150 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-MEMORY-DEFAULT-R01",
+    "run_id":  "CLAUDE-WIN-A-MEMORY-DEFAULT-R01",
+    "description":  "Memory tool use: ask Claude to store a marker using its memory feature and determine what artifact is written under .claude and whether it persists.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "MEMORY-DEFAULT",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+
+                   ],
+    "launch_flags":  "",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  false,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_memory",
+    "controlled_prompt":  "Please remember the following for this project: the lab session marker is CLAUDE_MEMORY_MARKER_R01. Confirm you have stored it.",
+    "markers":  [
+                    "CLAUDE_MEMORY_MARKER_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_memory\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               ".claude memory file (if written)",
+                               "Sysmon Event 11 on memory file path"
+                           ],
+    "expected_host_effects":  [
+                                  "Claude may write to a memory file under %USERPROFILE%\\.claude\\.",
+                                  "Sysmon Event 11 expected if a memory file is written.",
+                                  "history.jsonl records the memory tool call if it fires."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-MEMORY-DEFAULT-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-MEMORY-DEFAULT-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "MEMORY-DEFAULT",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Identify which file under .claude is used for memory storage and whether the marker is recoverable from it.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_memory",
+                                "LAUNCH_FLAGS":  "",
+                                "COMMAND_TYPED":  "claude",
+                                "PROMPT1_TEXT":  "Please remember the following for this project: the lab session marker is CLAUDE_MEMORY_MARKER_R01. Confirm you have stored it.",
+                                "EXPECTED_BOUNDARY_RESULT":  "Write to .claude directory; no project file write.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-MEMORY-DEFAULT-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-MEMORY-DEFAULT-R01-POSTCOLLECTION"
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "Claude Code memory writes to a file under ~/.claude/. After the session, inspect .claude directory for any new or modified files containing the marker. A second verification run (A10-SESSION-CONTINUE) will check whether the memory survives across sessions.",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-MEMORY-DEFAULT-R01.json",
+    "probe_or_scenario":  "MEMORY-DEFAULT"
+}

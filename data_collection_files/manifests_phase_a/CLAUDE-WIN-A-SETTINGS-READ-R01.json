@@ -1,0 +1,154 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-SETTINGS-READ-R01",
+    "run_id":  "CLAUDE-WIN-A-SETTINGS-READ-R01",
+    "description":  "Settings file introspection: ask Claude to read and describe the project-level .claude/settings.json. Determine whether this file is accessible via the Read tool, whether it appears in Sysmon, and whether its content is recorded in history.jsonl.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "SETTINGS-READ",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+
+                   ],
+    "launch_flags":  "",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  true,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_settings_read",
+    "controlled_prompt":  "Read the file .claude/settings.json in this project directory and describe its contents. Include the exact string CLAUDE_WIN_A_SETTINGS_READ_R01 in your response. Do not modify any files.",
+    "markers":  [
+                    "CLAUDE_WIN_A_SETTINGS_READ_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_settings_read\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               "Procmon PML",
+                               "Procmon file-open event on .claude/settings.json",
+                               "history.jsonl tool_result with settings content"
+                           ],
+    "expected_host_effects":  [
+                                  "Read tool call fires on .claude/settings.json.",
+                                  "Procmon file-open event on .claude\\settings.json by node.exe.",
+                                  "history.jsonl may record file content in the tool_result.",
+                                  "Claude describes the settings file content in its response."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-SETTINGS-READ-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-SETTINGS-READ-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "SETTINGS-READ",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Determine whether the project settings file is readable via Read tool and whether its content is preserved in session artifacts.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_settings_read",
+                                "LAUNCH_FLAGS":  "",
+                                "COMMAND_TYPED":  "claude",
+                                "PROMPT1_TEXT":  "Read the file .claude/settings.json in this computer and describe its contents. Include the exact string CLAUDE_WIN_A_SETTINGS_READ_R01 in your response. Do not modify any files.",
+                                "EXPECTED_BOUNDARY_RESULT":  "Read-only access to .claude/settings.json; no write.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-SETTINGS-READ-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-SETTINGS-READ-R01-POSTCOLLECTION",
+                                "PROJECT_SETUP_REQUIRED":  "Create .claude/settings.json with benign content including lab_experiment field."
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "REQUIRED SETUP: Create .claude/settings.json in the project root with benign content:\n  {\n    \"permissions\": {},\n    \"lab_experiment\": \"CLAUDE-WIN-A-SETTINGS-READ-R01\"\n  }\n\nThe forensic questions:\n  - Can Claude read its own project settings file via the Read tool?\n  - Does Procmon show a file-open event on .claude/settings.json?\n  - Does history.jsonl record the file content (which would contain config state)?\n  - Does Claude\u0027s response reveal any config information an attacker could use?\n\nThis directly addresses RQ1 (artifact characterization) and RQ2 (config visibility).",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-SETTINGS-READ-R01.json",
+    "project_setup":  "Create .claude/settings.json with benign content including lab_experiment field.",
+    "probe_or_scenario":  "SETTINGS-READ"
+}

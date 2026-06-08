@@ -1,0 +1,234 @@
+{
+  "experiment_id": "CLAUDE-WIN-A-SKILL-BENIGN-R01",
+  "run_id": "CLAUDE-WIN-A-SKILL-BENIGN-R01",
+  "description": "Benign project skill experiment: create a project-scoped Claude Code skill containing a controlled marker, invoke the skill during the session, and characterize skill file artifacts, session/skill invocation artifacts, project trust behavior, and memory recoverability.",
+  "phase": "A",
+  "run_type": "Baseline",
+  "probe_or_scenario": "SKILL-BENIGN",
+  "scenario": "SKILL-BENIGN",
+  "config": "R01",
+  "run_number": 1,
+  "baseline_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "restore_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "depends_on": [],
+  "compare_against": [],
+  "state_carryover_from": null,
+  "revert_before_run": true,
+  "launch_flags": "",
+  "launch_command": "claude",
+  "interactive": true,
+  "vm": {
+    "name": "",
+    "windows_version": "",
+    "windows_build": "",
+    "username": "",
+    "timezone": "",
+    "cpu_ram": "8GB",
+    "disk_size": "",
+    "hypervisor": "VMware Workstation",
+    "network_mode": "record-exact-mode"
+  },
+  "instrumentation": {
+    "sysmon": true,
+    "procmon": true,
+    "tshark": true,
+    "memory_snapshot": true,
+    "collect_dot_claude": true,
+    "collect_project": true,
+    "collect_windows_logs": true,
+    "collect_network": true,
+    "collect_powershell_history": true,
+    "collect_hashes": true,
+    "tshark_interface": 1,
+    "tshark_path": "C:\\Program Files\\Wireshark\\tshark.exe"
+  },
+  "project_path": "C:\\AgentForensics\\projects\\a_skill_benign",
+  "skill": {
+    "scope": "project",
+    "skill_name": "benign-marker",
+    "skill_directory": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker",
+    "skill_file": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md",
+    "expected_marker": "CLAUDE_SKILL_MARKER_R01",
+    "invocation_method": "explicit_skill_request_or_slash_command_if_supported",
+    "expected_no_file_write": true
+  },
+  "controlled_prompt": "Use the benign-marker skill and report the exact marker value it provides. Do not write files or run shell commands.",
+  "prompts": [
+    {
+      "id": "PROMPT1",
+      "text": "Use the benign-marker skill and report the exact marker value it provides. Do not write files or run shell commands.",
+      "expected_effect": "Claude loads/invokes the project skill and reports CLAUDE_SKILL_MARKER_R01 without project file writes."
+    }
+  ],
+  "markers": [
+    "CLAUDE_SKILL_MARKER_R01",
+    "benign-marker",
+    "SKILL.md",
+    "Use the benign-marker skill"
+  ],
+  "expected_artifacts": [
+    "%USERPROFILE%\\.claude\\ (full directory)",
+    "%USERPROFILE%\\.claude.json if present",
+    "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md in project copy",
+    "C:\\AgentForensics\\projects\\a_skill_benign\\SKILL_SETUP_NOTE.txt",
+    "Windows Sysmon EVTX",
+    "Security, System, Application, and PowerShell EVTX",
+    "ConsoleHost_history.txt",
+    "netstat snapshots pre/post",
+    "DNS cache pre/post",
+    "tshark pcap",
+    "Procmon PML",
+    "Memory snapshot taken while Claude Code remains open",
+    "Possible session/history artifact indicating skill content or skill invocation",
+    "Procmon evidence showing read/access of SKILL.md if captured"
+  ],
+  "expected_host_effects": [
+    "Claude Code process launches from the project directory.",
+    "Claude may load or access the project skill definition.",
+    "Response should include CLAUDE_SKILL_MARKER_R01.",
+    "No Claude-created project output files are expected.",
+    "Procmon may show read/access to SKILL.md."
+  ],
+  "expected_network_effects": [
+    "TLS connection to Claude/Anthropic API endpoint expected.",
+    "No external network connection should be required for the skill itself.",
+    "Check pcap and Sysmon network events for unexpected outbound destinations."
+  ],
+  "memory_snapshot": {
+    "required": true,
+    "timing": "after AGENT_DONE_VM_TIME while Claude Code is still open and before Claude exit",
+    "expected_snapshot_name": "SNAP-CLAUDE-WIN-A-SKILL-BENIGN-R01-MEMORY",
+    "strings_to_search": [
+      "CLAUDE_SKILL_MARKER_R01",
+      "benign-marker",
+      "SKILL.md",
+      "C:\\AgentForensics\\projects\\a_skill_benign",
+      "Use the benign-marker skill"
+    ]
+  },
+  "dirty_snapshot": {
+    "required": false,
+    "timing": "after instrumentation stop and evidence package creation",
+    "expected_snapshot_name": "DIRTY-CLAUDE-WIN-A-SKILL-BENIGN-R01-POSTCOLLECTION",
+    "purpose": "Optional post-collection debug snapshot; not the primary memory evidence."
+  },
+  "ground_truth_static": {
+    "RUN_ID": "CLAUDE-WIN-A-SKILL-BENIGN-R01",
+    "TYPE": "Baseline",
+    "PROBE_OR_SCENARIO": "SKILL-BENIGN",
+    "TOOL": "ClaudeCode",
+    "OBJECTIVE": "Determine whether a benign project skill is recoverable from project artifacts, session artifacts, host logs, and memory after invocation.",
+    "SNAPSHOT": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "PROJECT_PATH": "C:\\AgentForensics\\projects\\a_skill_benign",
+    "LAUNCH_FLAGS": "",
+    "COMMAND_TYPED": "claude",
+    "PROMPT1_TEXT": "Use the benign-marker skill and report the exact marker value it provides. Do not write files or run shell commands.",
+    "EXPECTED_BOUNDARY_RESULT": "Project skill invocation/read; no file write or shell command expected.",
+    "EXPECTED_MEMORY_SNAPSHOT_NAME": "SNAP-CLAUDE-WIN-A-SKILL-BENIGN-R01-MEMORY",
+    "EXPECTED_DIRTY_SNAPSHOT_NAME": "DIRTY-CLAUDE-WIN-A-SKILL-BENIGN-R01-POSTCOLLECTION",
+    "SKILL_SCOPE": "project",
+    "SKILL_NAME": "benign-marker",
+    "SKILL_FILE": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md",
+    "EXPECTED_RESPONSE_MARKER": "CLAUDE_SKILL_MARKER_R01"
+  },
+  "ground_truth_dynamic_fields_expected": [
+    "VM_TIME_BEFORE",
+    "INSTRUMENTATION_START_VM_TIME",
+    "PROBE_START_VM_TIME",
+    "CLAUDE_LAUNCH_VM_TIME",
+    "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+    "PROMPT1_SUBMITTED_VM_TIME",
+    "PERMISSION_PROMPT_SEEN",
+    "PERMISSION_PROMPT_VM_TIME",
+    "PERMISSION_PROMPT_TEXT",
+    "PERMISSION_DECISION",
+    "AGENT_DONE_VM_TIME",
+    "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+    "MEMORY_SNAPSHOT_NAME",
+    "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+    "CLAUDE_EXIT_VM_TIME",
+    "INSTRUMENTATION_STOP_VM_TIME",
+    "VM_TIME_AFTER",
+    "PCAP_PATH",
+    "PCAP_COLLECTED",
+    "PROCMON_PML_PATH",
+    "PROCMON_PML_COLLECTED",
+    "EVIDENCE_ZIP_PATH",
+    "EVIDENCE_ZIP_SHA256",
+    "DIRTY_SNAPSHOT_NAME",
+    "DIRTY_SNAPSHOT_VM_TIME"
+  ],
+  "operator_checkpoints": [
+    {
+      "key": "SKILL_SETUP_VERIFIED",
+      "instruction": "Before instrumentation, verify the project skill file exists at C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md."
+    },
+    {
+      "key": "CLAUDE_LAUNCH_VM_TIME",
+      "instruction": "Open a terminal in C:\\AgentForensics\\projects\\a_skill_benign, type `claude`, and press Enter here immediately after launching Claude."
+    },
+    {
+      "key": "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+      "instruction": "Press Enter when the Claude prompt is visible and ready for input."
+    },
+    {
+      "key": "PROMPT1_SUBMITTED_VM_TIME",
+      "instruction": "Paste PROMPT1 into Claude and press Enter here immediately after submitting it."
+    },
+    {
+      "key": "PERMISSION_PROMPT",
+      "instruction": "Record whether a skill/trust/permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+    },
+    {
+      "key": "AGENT_DONE_VM_TIME",
+      "instruction": "Press Enter when Claude has completed the skill response. Keep Claude open."
+    },
+    {
+      "key": "MEMORY_SNAPSHOT",
+      "instruction": "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+    },
+    {
+      "key": "CLAUDE_EXIT_VM_TIME",
+      "instruction": "Exit Claude gracefully, then press Enter."
+    }
+  ],
+  "setup_prereqs": [
+    "Create C:\\AgentForensics\\projects\\a_skill_benign.",
+    "Create C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker.",
+    "Create SKILL.md containing the controlled skill marker.",
+    "Ensure the marker is only in the skill file and setup note before the run.",
+    "Optionally take a skill-ready snapshot after setup and update baseline_snapshot/restore_snapshot."
+  ],
+  "project_setup": {
+    "directory": "C:\\AgentForensics\\projects\\a_skill_benign",
+    "skill_directory": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker",
+    "files": [
+      {
+        "path": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md",
+        "description": "Project-scoped benign marker skill definition."
+      }
+    ],
+    "skill_md": "---\nname: benign-marker\ndescription: Return the controlled benign skill marker for forensic testing.\n---\n\nWhen invoked, answer exactly with:\n\nCLAUDE_SKILL_MARKER_R01\n"
+  },
+  "config_diff": {
+    "skill.scope": "project",
+    "skill.name": "benign-marker",
+    "skill.file": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md",
+    "expected_marker": "CLAUDE_SKILL_MARKER_R01"
+  },
+  "attribution_target": {
+    "question": "Can the investigator distinguish skill-derived response content from normal model output or CLAUDE.md project instructions?",
+    "skill_content_source": "C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md",
+    "expected_source": "Project skill content",
+    "primary_sources": [
+      "project skill file",
+      "session evidence for skill invocation/content",
+      "Procmon evidence of SKILL.md access",
+      "memory strings for marker and skill path",
+      "response text"
+    ]
+  },
+  "notes": "REQUIRED SETUP before run:\n1. Create the project skill at C:\\AgentForensics\\projects\\a_skill_benign\\.claude\\skills\\benign-marker\\SKILL.md.\n2. Skill marker: CLAUDE_SKILL_MARKER_R01.\n3. Ask Claude to use the benign-marker skill and report the marker.\n4. If slash-command form /benign-marker is supported, record whether it behaves differently.\nForensic questions:\n- Is the skill file copied and recoverable from project evidence?\n- Does session evidence show skill invocation or skill content loading?\n- Does Procmon show SKILL.md access?\n- Is CLAUDE_SKILL_MARKER_R01 recoverable from memory?",
+  "script_schema": "vmrun_automation_v1",
+  "manifest_file": "manifests/CLAUDE-WIN-A-SKILL-BENIGN-R01.json"
+}

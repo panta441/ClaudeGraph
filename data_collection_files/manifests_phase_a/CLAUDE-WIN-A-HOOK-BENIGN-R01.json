@@ -1,0 +1,281 @@
+{
+  "experiment_id": "CLAUDE-WIN-A-HOOK-BENIGN-R01",
+  "run_id": "CLAUDE-WIN-A-HOOK-BENIGN-R01",
+  "description": "Benign PostToolUse hook experiment: configure a project-scoped hook that runs a shell command after Claude Code uses the Write tool, then trigger it by asking Claude to write a controlled file. Characterize hook configuration artifacts, Claude Write-tool artifacts, hook-spawned process artifacts, file creation attribution, memory recoverability, and host-level correlation.",
+  "phase": "A",
+  "run_type": "Baseline",
+  "probe_or_scenario": "HOOK-BENIGN",
+  "scenario": "HOOK-BENIGN",
+  "config": "R01",
+  "run_number": 1,
+  "baseline_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "restore_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "depends_on": [],
+  "compare_against": [],
+  "state_carryover_from": null,
+  "revert_before_run": true,
+  "launch_flags": "",
+  "launch_command": "claude",
+  "interactive": true,
+  "vm": {
+    "name": "",
+    "windows_version": "",
+    "windows_build": "",
+    "username": "",
+    "timezone": "",
+    "cpu_ram": "8GB",
+    "disk_size": "",
+    "hypervisor": "VMware Workstation",
+    "network_mode": "record-exact-mode"
+  },
+  "instrumentation": {
+    "sysmon": true,
+    "procmon": true,
+    "tshark": true,
+    "memory_snapshot": true,
+    "collect_dot_claude": true,
+    "collect_project": true,
+    "collect_windows_logs": true,
+    "collect_network": true,
+    "collect_powershell_history": true,
+    "collect_hashes": true,
+    "tshark_interface": 1,
+    "tshark_path": "C:\\Program Files\\Wireshark\\tshark.exe"
+  },
+  "project_path": "C:\\AgentForensics\\projects\\a_hook_benign",
+  "hook": {
+    "scope": "project",
+    "settings_path": "C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json",
+    "event": "PostToolUse",
+    "matcher": "Write",
+    "type": "command",
+    "command": "cmd /c echo CLAUDE_HOOK_MARKER_R01 > C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+    "expected_hook_output_file": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+    "expected_hook_marker": "CLAUDE_HOOK_MARKER_R01",
+    "expected_hook_process": "cmd.exe",
+    "expected_trigger_tool": "Write",
+    "expected_trigger_file": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_input.txt"
+  },
+  "controlled_prompt": "Write the text 'hook_test_content' to a file named hook_input.txt in this project directory. Do not run any other commands.",
+  "prompts": [
+    {
+      "id": "PROMPT1",
+      "text": "Write the text 'hook_test_content' to a file named hook_input.txt in this project directory. Do not run any other commands.",
+      "expected_effect": "Claude uses the native Write tool to create hook_input.txt. The configured PostToolUse hook then runs cmd.exe and creates hook_output.txt containing CLAUDE_HOOK_MARKER_R01."
+    }
+  ],
+  "markers": [
+    "hook_test_content",
+    "CLAUDE_HOOK_MARKER_R01",
+    "hook_input.txt",
+    "hook_output.txt",
+    "PostToolUse",
+    "Write"
+  ],
+  "expected_artifacts": [
+    "%USERPROFILE%\\.claude\\ (full directory)",
+    "%USERPROFILE%\\.claude.json if present",
+    "C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json",
+    "C:\\AgentForensics\\projects\\a_hook_benign\\hook_input.txt in project copy",
+    "C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt in project copy",
+    "Windows Sysmon EVTX",
+    "Security, System, Application, and PowerShell EVTX",
+    "ConsoleHost_history.txt",
+    "netstat snapshots pre/post",
+    "DNS cache pre/post",
+    "tshark pcap",
+    "Procmon PML",
+    "Memory snapshot taken while Claude Code remains open",
+    "Sysmon Event ID 1 for hook-spawned cmd.exe",
+    "Sysmon Event ID 11/FileCreate for hook_input.txt and hook_output.txt",
+    "Possible .claude session/project artifact containing Write tool_use entry for hook_input.txt",
+    "Possible hook execution/debug artifact depending on Claude Code version/settings"
+  ],
+  "expected_host_effects": [
+    "Claude Code process launches from the project directory.",
+    "Claude uses the native Write tool to create hook_input.txt.",
+    "The PostToolUse hook fires after the Write tool completes.",
+    "The hook spawns cmd.exe to write hook_output.txt.",
+    "hook_input.txt should contain hook_test_content.",
+    "hook_output.txt should contain CLAUDE_HOOK_MARKER_R01.",
+    "Sysmon Event ID 1 should show cmd.exe command line containing CLAUDE_HOOK_MARKER_R01 and hook_output.txt.",
+    "Sysmon/FileCreate or Procmon should help distinguish Claude-created hook_input.txt from hook-created hook_output.txt."
+  ],
+  "expected_network_effects": [
+    "TLS connection to Claude/Anthropic API endpoint is expected.",
+    "No external network connection should be required for the hook itself.",
+    "Check pcap and Sysmon network events for unexpected outbound destinations."
+  ],
+  "memory_snapshot": {
+    "required": true,
+    "timing": "after AGENT_DONE_VM_TIME while Claude Code is still open and before Claude exit",
+    "expected_snapshot_name": "SNAP-CLAUDE-WIN-A-HOOK-BENIGN-R01-MEMORY",
+    "strings_to_search": [
+      "hook_test_content",
+      "CLAUDE_HOOK_MARKER_R01",
+      "hook_input.txt",
+      "hook_output.txt",
+      "PostToolUse",
+      "Write",
+      "C:\\AgentForensics\\projects\\a_hook_benign"
+    ]
+  },
+  "dirty_snapshot": {
+    "required": false,
+    "timing": "after instrumentation stop and evidence package creation",
+    "expected_snapshot_name": "DIRTY-CLAUDE-WIN-A-HOOK-BENIGN-R01-POSTCOLLECTION",
+    "purpose": "Optional post-collection debug snapshot; not the primary memory evidence."
+  },
+  "ground_truth_static": {
+    "RUN_ID": "CLAUDE-WIN-A-HOOK-BENIGN-R01",
+    "TYPE": "Baseline",
+    "PROBE_OR_SCENARIO": "HOOK-BENIGN",
+    "TOOL": "ClaudeCode",
+    "OBJECTIVE": "Determine whether a hook-spawned process and hook-created file can be distinguished from Claude's native Write-tool file creation using host-level, project-level, session-level, and memory artifacts.",
+    "SNAPSHOT": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "PROJECT_PATH": "C:\\AgentForensics\\projects\\a_hook_benign",
+    "LAUNCH_FLAGS": "",
+    "COMMAND_TYPED": "claude",
+    "PROMPT1_TEXT": "Write the text 'hook_test_content' to a file named hook_input.txt in this project directory. Do not run any other commands.",
+    "EXPECTED_CREATED_FILE_CLAUDE": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_input.txt",
+    "EXPECTED_CREATED_FILE_HOOK": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+    "EXPECTED_CLAUDE_FILE_CONTENT": "hook_test_content",
+    "EXPECTED_HOOK_FILE_CONTENT": "CLAUDE_HOOK_MARKER_R01",
+    "EXPECTED_BOUNDARY_RESULT": "Two file writes: one by Claude native Write tool, one by hook-spawned cmd.exe.",
+    "EXPECTED_MEMORY_SNAPSHOT_NAME": "SNAP-CLAUDE-WIN-A-HOOK-BENIGN-R01-MEMORY",
+    "EXPECTED_DIRTY_SNAPSHOT_NAME": "DIRTY-CLAUDE-WIN-A-HOOK-BENIGN-R01-POSTCOLLECTION",
+    "HOOK_SCOPE": "project",
+    "HOOK_SETTINGS_PATH": "C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json",
+    "HOOK_EVENT": "PostToolUse",
+    "HOOK_MATCHER": "Write",
+    "HOOK_COMMAND": "cmd /c echo CLAUDE_HOOK_MARKER_R01 > C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+    "EXPECTED_HOOK_PROCESS": "cmd.exe"
+  },
+  "ground_truth_dynamic_fields_expected": [
+    "VM_TIME_BEFORE",
+    "INSTRUMENTATION_START_VM_TIME",
+    "PROBE_START_VM_TIME",
+    "CLAUDE_LAUNCH_VM_TIME",
+    "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+    "PROMPT1_SUBMITTED_VM_TIME",
+    "PERMISSION_PROMPT_SEEN",
+    "PERMISSION_PROMPT_VM_TIME",
+    "PERMISSION_PROMPT_TEXT",
+    "PERMISSION_DECISION",
+    "AGENT_DONE_VM_TIME",
+    "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+    "MEMORY_SNAPSHOT_NAME",
+    "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+    "CLAUDE_EXIT_VM_TIME",
+    "INSTRUMENTATION_STOP_VM_TIME",
+    "VM_TIME_AFTER",
+    "PCAP_PATH",
+    "PCAP_COLLECTED",
+    "PROCMON_PML_PATH",
+    "PROCMON_PML_COLLECTED",
+    "EVIDENCE_ZIP_PATH",
+    "EVIDENCE_ZIP_SHA256",
+    "DIRTY_SNAPSHOT_NAME",
+    "DIRTY_SNAPSHOT_VM_TIME"
+  ],
+  "operator_checkpoints": [
+    {
+      "key": "HOOK_SETUP_VERIFIED",
+      "instruction": "Before starting instrumentation, verify C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json exists and contains a PostToolUse hook with matcher Write."
+    },
+    {
+      "key": "CLAUDE_LAUNCH_VM_TIME",
+      "instruction": "Open a terminal in C:\\AgentForensics\\projects\\a_hook_benign, type `claude`, and press Enter here immediately after launching Claude."
+    },
+    {
+      "key": "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+      "instruction": "Press Enter when the Claude prompt is visible and ready for input."
+    },
+    {
+      "key": "PROMPT1_SUBMITTED_VM_TIME",
+      "instruction": "Paste PROMPT1 into Claude and press Enter here immediately after submitting it."
+    },
+    {
+      "key": "PERMISSION_PROMPT",
+      "instruction": "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+    },
+    {
+      "key": "AGENT_DONE_VM_TIME",
+      "instruction": "Press Enter when Claude has completed the Write action and the hook has had time to fire. Keep Claude open."
+    },
+    {
+      "key": "MEMORY_SNAPSHOT",
+      "instruction": "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+    },
+    {
+      "key": "CLAUDE_EXIT_VM_TIME",
+      "instruction": "Exit Claude gracefully, then press Enter."
+    }
+  ],
+  "setup_prereqs": [
+    "Create C:\\AgentForensics\\projects\\a_hook_benign.",
+    "Create C:\\AgentForensics\\projects\\a_hook_benign\\.claude.",
+    "Create C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json with the project-scoped PostToolUse Write hook.",
+    "Ensure hook_input.txt and hook_output.txt do not exist before starting the measured run.",
+    "Optionally take a hook-ready snapshot after setup and update baseline_snapshot/restore_snapshot to that snapshot."
+  ],
+  "project_setup": {
+    "directory": "C:\\AgentForensics\\projects\\a_hook_benign",
+    "files": [
+      {
+        "path": "C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json",
+        "description": "Project-scoped Claude Code hook configuration for PostToolUse on Write."
+      }
+    ],
+    "settings_json": {
+      "hooks": {
+        "PostToolUse": [
+          {
+            "matcher": "Write",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "cmd /c echo CLAUDE_HOOK_MARKER_R01 > C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "cleanup_before_run": [
+      "C:\\AgentForensics\\projects\\a_hook_benign\\hook_input.txt",
+      "C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt"
+    ]
+  },
+  "config_diff": {
+    "hooks.PostToolUse.matcher": "Write",
+    "hooks.PostToolUse.command": "cmd /c echo CLAUDE_HOOK_MARKER_R01 > C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+    "expected_config_artifact": "C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json",
+    "scope": "project"
+  },
+  "attribution_target": {
+    "question": "Can the investigator distinguish the file written by Claude's native Write tool from the file written by the PostToolUse hook-spawned cmd.exe process?",
+    "claude_direct_write": {
+      "file": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_input.txt",
+      "expected_content": "hook_test_content",
+      "expected_source": "Claude native Write tool"
+    },
+    "hook_indirect_write": {
+      "file": "C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt",
+      "expected_content": "CLAUDE_HOOK_MARKER_R01",
+      "expected_source": "PostToolUse hook command via cmd.exe"
+    },
+    "primary_sources": [
+      "project .claude/settings.json hook config",
+      ".claude session/tool_use artifacts for Write",
+      "Sysmon Event ID 1 for cmd.exe hook command",
+      "Sysmon FileCreate/FileDelete events if configured",
+      "Procmon rows for hook_input.txt and hook_output.txt",
+      "project file contents",
+      "memory strings for hook markers and file paths"
+    ]
+  },
+  "notes": "REQUIRED SETUP before run:\n1. Create project directory: C:\\AgentForensics\\projects\\a_hook_benign.\n2. Create project hook config at: C:\\AgentForensics\\projects\\a_hook_benign\\.claude\\settings.json.\n3. Configure a PostToolUse hook with matcher Write.\n4. Hook command must use an absolute output path:\n   cmd /c echo CLAUDE_HOOK_MARKER_R01 > C:\\AgentForensics\\projects\\a_hook_benign\\hook_output.txt\n5. Remove any existing hook_input.txt and hook_output.txt before the measured run.\nForensic questions:\n- Does Claude session evidence show the native Write action for hook_input.txt?\n- Does Sysmon/Procmon show cmd.exe creating hook_output.txt?\n- Can hook-created hook_output.txt be attributed to the PostToolUse hook rather than Claude's native Write tool?\n- Are hook_test_content, CLAUDE_HOOK_MARKER_R01, hook_input.txt, and hook_output.txt recoverable from memory?",
+  "script_schema": "vmrun_automation_v1",
+  "manifest_file": "manifests/CLAUDE-WIN-A-HOOK-BENIGN-R01.json"
+}

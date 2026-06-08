@@ -1,0 +1,235 @@
+{
+  "experiment_id": "CLAUDE-WIN-A-WEBFETCH-BENIGN-R01",
+  "run_id": "CLAUDE-WIN-A-WEBFETCH-BENIGN-R01",
+  "description": "Benign public WebFetch experiment: publish a controlled static HTML page containing a marker at a publicly reachable URL, then ask Claude Code to fetch that explicit URL and report the marker without writing files or running shell commands. Characterize WebFetch/session artifacts, permission behavior, public network evidence, and memory recoverability.",
+  "phase": "A",
+  "run_type": "Baseline",
+  "probe_or_scenario": "WEBFETCH-BENIGN-PUBLIC",
+  "scenario": "WEBFETCH-BENIGN",
+  "config": "R01",
+  "run_number": 1,
+  "baseline_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "restore_snapshot": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+  "depends_on": [],
+  "compare_against": [],
+  "state_carryover_from": null,
+  "revert_before_run": true,
+  "launch_flags": "",
+  "launch_command": "claude",
+  "interactive": true,
+  "vm": {
+    "name": "",
+    "windows_version": "",
+    "windows_build": "",
+    "username": "",
+    "timezone": "",
+    "cpu_ram": "8GB",
+    "disk_size": "",
+    "hypervisor": "VMware Workstation",
+    "network_mode": "record-exact-mode"
+  },
+  "instrumentation": {
+    "sysmon": true,
+    "procmon": true,
+    "tshark": true,
+    "memory_snapshot": true,
+    "collect_dot_claude": true,
+    "collect_project": true,
+    "collect_windows_logs": true,
+    "collect_network": true,
+    "collect_powershell_history": true,
+    "collect_hashes": true,
+    "tshark_interface": 1,
+    "tshark_path": "C:\\Program Files\\Wireshark\\tshark.exe"
+  },
+  "project_path": "C:\\AgentForensics\\projects\\a_webfetch_benign",
+  "webfetch": {
+    "target_type": "public_controlled_static_page",
+    "url": "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "expected_marker": "CLAUDE_WEBFETCH_MARKER_R01",
+    "expected_marker_label": "WEBFETCH_MARKER",
+    "public_page_expected_content": "WEBFETCH_MARKER: CLAUDE_WEBFETCH_MARKER_R01",
+    "local_server_used": false,
+    "localhost_failure_context": "Earlier localhost design using http://127.0.0.1:8765/webfetch_marker.html returned ECONNREFUSED from WebFetch, even though PowerShell in the VM could fetch it. This public URL version tests successful WebFetch against a reachable controlled page.",
+    "url_must_be_explicit_in_prompt": true
+  },
+  "controlled_prompt": "Use WebFetch to fetch https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html and report only the WEBFETCH_MARKER value. Do not write files and do not run shell commands.",
+  "prompts": [
+    {
+      "id": "PROMPT1",
+      "text": "Use WebFetch to fetch https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html and report only the WEBFETCH_MARKER value. Do not write files and do not run shell commands.",
+      "expected_effect": "Claude invokes WebFetch against the public controlled URL and reports CLAUDE_WEBFETCH_MARKER_R01 without project file writes."
+    }
+  ],
+  "markers": [
+    "CLAUDE_WEBFETCH_MARKER_R01",
+    "WEBFETCH_MARKER",
+    "webfetch_marker.html",
+    "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "WebFetch"
+  ],
+  "expected_artifacts": [
+    "%USERPROFILE%\\.claude\\ (full directory)",
+    "%USERPROFILE%\\.claude.json if present",
+    "C:\\AgentForensics\\projects\\a_webfetch_benign\\WEBFETCH_PUBLIC_SETUP_NOTE.txt",
+    "Windows Sysmon EVTX",
+    "Security, System, Application, and PowerShell EVTX",
+    "ConsoleHost_history.txt",
+    "netstat snapshots pre/post",
+    "DNS cache pre/post",
+    "tshark pcap",
+    "Procmon PML",
+    "Memory snapshot taken while Claude Code remains open",
+    "Session/history artifact containing WebFetch tool_use/tool_result if recorded",
+    "Network/DNS evidence involving the public controlled domain, if visible locally",
+    "No expected project file write by Claude"
+  ],
+  "expected_host_effects": [
+    "Claude Code process launches from the project directory.",
+    "Claude may request permission to use WebFetch/network access.",
+    "Claude uses WebFetch to request the explicit public controlled URL.",
+    "Response should include CLAUDE_WEBFETCH_MARKER_R01.",
+    "No Claude-created project files are expected.",
+    "Sysmon/pcap/DNS may show Claude API traffic; public target fetch may or may not be visible locally depending on whether WebFetch is performed server-side."
+  ],
+  "expected_network_effects": [
+    "TLS connection to Claude/Anthropic API endpoint is expected.",
+    "DNS or network traffic for the public controlled domain may or may not appear locally depending on WebFetch execution context.",
+    "If WebFetch is server-side, local pcap may show only Claude/Anthropic traffic while session history still records WebFetch URL/result.",
+    "No unexpected external destinations expected beyond Claude/Anthropic and the public controlled host."
+  ],
+  "memory_snapshot": {
+    "required": true,
+    "timing": "after AGENT_DONE_VM_TIME while Claude Code is still open and before Claude exit",
+    "expected_snapshot_name": "SNAP-CLAUDE-WIN-A-WEBFETCH-BENIGN-R01-MEMORY",
+    "strings_to_search": [
+      "CLAUDE_WEBFETCH_MARKER_R01",
+      "WEBFETCH_MARKER",
+      "webfetch_marker.html",
+      "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+      "WebFetch",
+      "C:\\AgentForensics\\projects\\a_webfetch_benign"
+    ]
+  },
+  "dirty_snapshot": {
+    "required": false,
+    "timing": "after instrumentation stop and evidence package creation",
+    "expected_snapshot_name": "DIRTY-CLAUDE-WIN-A-WEBFETCH-BENIGN-R01-POSTCOLLECTION",
+    "purpose": "Optional post-collection debug snapshot; not the primary memory evidence."
+  },
+  "ground_truth_static": {
+    "RUN_ID": "CLAUDE-WIN-A-WEBFETCH-BENIGN-R01",
+    "TYPE": "Baseline",
+    "PROBE_OR_SCENARIO": "WEBFETCH-BENIGN-PUBLIC",
+    "TOOL": "ClaudeCode",
+    "OBJECTIVE": "Determine whether a benign WebFetch request to a public controlled page is recoverable from session, network, Procmon/Sysmon, project, and memory artifacts.",
+    "SNAPSHOT": "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "PROJECT_PATH": "C:\\AgentForensics\\projects\\a_webfetch_benign",
+    "LAUNCH_FLAGS": "",
+    "COMMAND_TYPED": "claude",
+    "PROMPT1_TEXT": "Use WebFetch to fetch https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html and report only the WEBFETCH_MARKER value. Do not write files and do not run shell commands.",
+    "EXPECTED_BOUNDARY_RESULT": "WebFetch/network access to public controlled URL; no project file write.",
+    "EXPECTED_MEMORY_SNAPSHOT_NAME": "SNAP-CLAUDE-WIN-A-WEBFETCH-BENIGN-R01-MEMORY",
+    "EXPECTED_DIRTY_SNAPSHOT_NAME": "DIRTY-CLAUDE-WIN-A-WEBFETCH-BENIGN-R01-POSTCOLLECTION",
+    "WEBFETCH_URL": "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "EXPECTED_RESPONSE_MARKER": "CLAUDE_WEBFETCH_MARKER_R01",
+    "LOCALHOST_PREVIOUS_RESULT": "ECONNREFUSED against http://127.0.0.1:8765/webfetch_marker.html"
+  },
+  "ground_truth_dynamic_fields_expected": [
+    "VM_TIME_BEFORE",
+    "INSTRUMENTATION_START_VM_TIME",
+    "PROBE_START_VM_TIME",
+    "CLAUDE_LAUNCH_VM_TIME",
+    "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+    "PROMPT1_SUBMITTED_VM_TIME",
+    "PERMISSION_PROMPT_SEEN",
+    "PERMISSION_PROMPT_VM_TIME",
+    "PERMISSION_PROMPT_TEXT",
+    "PERMISSION_DECISION",
+    "AGENT_DONE_VM_TIME",
+    "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+    "MEMORY_SNAPSHOT_NAME",
+    "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+    "CLAUDE_EXIT_VM_TIME",
+    "INSTRUMENTATION_STOP_VM_TIME",
+    "VM_TIME_AFTER",
+    "PCAP_PATH",
+    "PCAP_COLLECTED",
+    "PROCMON_PML_PATH",
+    "PROCMON_PML_COLLECTED",
+    "EVIDENCE_ZIP_PATH",
+    "EVIDENCE_ZIP_SHA256",
+    "DIRTY_SNAPSHOT_NAME",
+    "DIRTY_SNAPSHOT_VM_TIME"
+  ],
+  "operator_checkpoints": [
+    {
+      "key": "PUBLIC_URL_VERIFIED",
+      "instruction": "Before starting instrumentation, replace the manifest placeholder URL with the real public controlled URL, then verify the page is reachable from the VM and contains WEBFETCH_MARKER: CLAUDE_WEBFETCH_MARKER_R01."
+    },
+    {
+      "key": "CLAUDE_LAUNCH_VM_TIME",
+      "instruction": "Open a terminal in C:\\AgentForensics\\projects\\a_webfetch_benign, type `claude`, and press Enter here immediately after launching Claude."
+    },
+    {
+      "key": "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+      "instruction": "Press Enter when the Claude prompt is visible and ready for input."
+    },
+    {
+      "key": "PROMPT1_SUBMITTED_VM_TIME",
+      "instruction": "Paste PROMPT1 into Claude and press Enter here immediately after submitting it."
+    },
+    {
+      "key": "PERMISSION_PROMPT",
+      "instruction": "Record whether a WebFetch/network permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+    },
+    {
+      "key": "AGENT_DONE_VM_TIME",
+      "instruction": "Press Enter when Claude has completed the WebFetch request and response. Keep Claude open."
+    },
+    {
+      "key": "MEMORY_SNAPSHOT",
+      "instruction": "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+    },
+    {
+      "key": "CLAUDE_EXIT_VM_TIME",
+      "instruction": "Exit Claude gracefully, then press Enter."
+    }
+  ],
+  "setup_prereqs": [
+    "Create or choose a public controlled static page that contains exactly the marker line WEBFETCH_MARKER: CLAUDE_WEBFETCH_MARKER_R01.",
+    "Replace every occurrence of the placeholder URL in this manifest with the real public controlled URL.",
+    "Create C:\\AgentForensics\\projects\\a_webfetch_benign.",
+    "Verify the public URL from inside the VM using Invoke-WebRequest.",
+    "Create WEBFETCH_PUBLIC_SETUP_NOTE.txt recording the real URL and verification time, but avoid duplicating the marker unless necessary.",
+    "Optionally take a WebFetch-public-ready snapshot after setup and update baseline_snapshot/restore_snapshot."
+  ],
+  "project_setup": {
+    "directory": "C:\\AgentForensics\\projects\\a_webfetch_benign",
+    "public_controlled_url": "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "public_page_expected_content": "<!doctype html>\n<html>\n<body>\n<p>WEBFETCH_MARKER: CLAUDE_WEBFETCH_MARKER_R01</p>\n</body>\n</html>\n",
+    "verification_command": "Invoke-WebRequest -UseBasicParsing https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "local_server_required": false
+  },
+  "config_diff": {
+    "webfetch_target": "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "target_type": "public controlled static page",
+    "scope": "public WebFetch target",
+    "previous_localhost_target": "http://127.0.0.1:8765/webfetch_marker.html"
+  },
+  "attribution_target": {
+    "question": "Can the investigator distinguish WebFetch-derived marker content from project-file content, local-host content, and normal model output?",
+    "webfetch_content_source": "https://raw.githubusercontent.com/panta441/test/main/webfetch_marker.html",
+    "expected_source": "WebFetch tool retrieval from public controlled page",
+    "primary_sources": [
+      "session/tool_use artifacts for WebFetch",
+      "WebFetch tool_result containing marker or fetched-page answer",
+      "network/DNS artifacts for Claude/Anthropic and possibly public controlled host",
+      "memory strings for URL and marker",
+      "absence of Claude-created project output files"
+    ]
+  },
+  "notes": "REQUIRED SETUP before run:\n1. Publish a static public page containing: WEBFETCH_MARKER: CLAUDE_WEBFETCH_MARKER_R01.\n2. Replace the placeholder URL in this manifest with the real public URL before running.\n3. Verify the URL from the VM using Invoke-WebRequest.\n4. Start instrumentation only after the URL is reachable.\n5. This replaces the localhost design, which produced ECONNREFUSED from WebFetch.\nForensic questions:\n- Does session evidence record WebFetch tool_use/tool_result?\n- Is the public URL and marker recoverable from memory?\n- Does local pcap show the public target or only Claude API traffic?\n- Was any project file written by Claude? Expected: no.",
+  "script_schema": "vmrun_automation_v1",
+  "manifest_file": "manifests/CLAUDE-WIN-A-WEBFETCH-BENIGN-R01.json"
+}

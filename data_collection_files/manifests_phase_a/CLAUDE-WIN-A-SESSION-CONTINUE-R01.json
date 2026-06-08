@@ -1,0 +1,152 @@
+﻿{
+    "experiment_id":  "CLAUDE-WIN-A-SESSION-CONTINUE-R01",
+    "run_id":  "CLAUDE-WIN-A-SESSION-CONTINUE-R01",
+    "description":  "Session continuity artifact: launch Claude with the --continue flag to resume the most recent session. Verify whether prior context is visible and what artifact distinguishes a continued session from a new one.",
+    "phase":  "A",
+    "run_type":  "Baseline",
+    "scenario":  "SESSION-CONTINUE",
+    "config":  "R01",
+    "run_number":  1,
+    "baseline_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "restore_snapshot":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+    "depends_on":  [
+                       "CLAUDE-WIN-A-MEMORY-DEFAULT-R01"
+                   ],
+    "launch_flags":  "--continue",
+    "vm":  {
+               "name":  "",
+               "windows_version":  "",
+               "windows_build":  "",
+               "username":  "",
+               "timezone":  "",
+               "cpu_ram":  "8GB",
+               "disk_size":  "",
+               "hypervisor":  "",
+               "network_mode":  "record-exact-mode"
+           },
+    "instrumentation":  {
+                            "sysmon":  true,
+                            "procmon":  false,
+                            "tshark":  true,
+                            "memory_snapshot":  true,
+                            "collect_dot_claude":  true,
+                            "collect_project":  true,
+                            "collect_windows_logs":  true,
+                            "collect_network":  true,
+                            "collect_powershell_history":  true,
+                            "collect_hashes":  true,
+                            "tshark_interface":  1,
+                            "tshark_path":  "C:\\Program Files\\Wireshark\\tshark.exe"
+                        },
+    "project_path":  "C:\\AgentForensics\\projects\\a_session_continue",
+    "controlled_prompt":  "What was the last marker string I asked you to remember or include? State it exactly. Include the string CLAUDE_RESUME_MARKER_R01 in your response.",
+    "markers":  [
+                    "CLAUDE_RESUME_MARKER_R01"
+                ],
+    "expected_artifacts":  [
+                               "%USERPROFILE%\\.claude\\ (full directory)",
+                               "%USERPROFILE%\\.claude.json (if present)",
+                               "C:\\AgentForensics\\projects\\a_session_continue\\ (project directory copy)",
+                               "Windows Sysmon EVTX",
+                               "Security, System, PowerShell EVTX",
+                               "netstat snapshots (pre/post)",
+                               "DNS cache (pre/post)",
+                               "tshark pcap",
+                               "Memory snapshot (hypervisor, while Claude is open)",
+                               "Continued history.jsonl entry",
+                               "Session ID metadata in .claude",
+                               "Response containing prior marker"
+                           ],
+    "expected_host_effects":  [
+                                  "history.jsonl gains a new entry appended to the existing session rather than a new session file.",
+                                  "Claude\u0027s response references CLAUDE_MEMORY_MARKER_R01 if session context was successfully resumed.",
+                                  "No new project files created.",
+                                  ".claude session metadata may differ from a fresh launch (session ID, timestamps)."
+                              ],
+    "expected_network_effects":  [
+                                     "TLS connection to api.anthropic.com expected. Capture with tshark; check pcap for any unexpected outbound destinations."
+                                 ],
+    "memory_snapshot":  {
+                            "required":  true,
+                            "timing":  "after AGENT_DONE_VM_TIME while Claude Code is still open",
+                            "expected_snapshot_name":  "SNAP-CLAUDE-WIN-A-SESSION-CONTINUE-R01-MEMORY"
+                        },
+    "dirty_snapshot":  {
+                           "required":  false,
+                           "timing":  "after instrumentation stop and evidence package creation",
+                           "expected_snapshot_name":  "DIRTY-{RUN_ID}-POSTCOLLECTION",
+                           "purpose":  "Optional post-collection debug snapshot; not the primary memory evidence."
+                       },
+    "ground_truth_static":  {
+                                "RUN_ID":  "CLAUDE-WIN-A-SESSION-CONTINUE-R01",
+                                "TYPE":  "Baseline",
+                                "PROBE_OR_SCENARIO":  "SESSION-CONTINUE",
+                                "TOOL":  "ClaudeCode",
+                                "OBJECTIVE":  "Identify which .claude artifact field distinguishes a resumed session from a new session.",
+                                "SNAPSHOT":  "SNAP-3C-ClaudeCode-Authenticated-ZeroSessions",
+                                "PROJECT_PATH":  "C:\\AgentForensics\\projects\\a_session_continue",
+                                "LAUNCH_FLAGS":  "--continue",
+                                "COMMAND_TYPED":  "claude --continue",
+                                "PROMPT1_TEXT":  "What was the last marker string I asked you to remember or include? State it exactly. Include the string CLAUDE_RESUME_MARKER_R01 in your response.",
+                                "EXPECTED_BOUNDARY_RESULT":  "No file write; read from prior session context.",
+                                "EXPECTED_MEMORY_SNAPSHOT_NAME":  "SNAP-CLAUDE-WIN-A-SESSION-CONTINUE-R01-MEMORY",
+                                "EXPECTED_DIRTY_SNAPSHOT_NAME":  "DIRTY-CLAUDE-WIN-A-SESSION-CONTINUE-R01-POSTCOLLECTION"
+                            },
+    "ground_truth_dynamic_fields_expected":  [
+                                                 "VM_TIME_BEFORE",
+                                                 "INSTRUMENTATION_START_VM_TIME",
+                                                 "PROBE_START_VM_TIME",
+                                                 "CLAUDE_LAUNCH_VM_TIME",
+                                                 "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                                 "PROMPT1_SUBMITTED_VM_TIME",
+                                                 "PERMISSION_PROMPT_SEEN",
+                                                 "PERMISSION_PROMPT_VM_TIME",
+                                                 "PERMISSION_PROMPT_TEXT",
+                                                 "PERMISSION_DECISION",
+                                                 "AGENT_DONE_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_REQUESTED_VM_TIME",
+                                                 "MEMORY_SNAPSHOT_NAME",
+                                                 "MEMORY_SNAPSHOT_COMPLETED_VM_TIME",
+                                                 "CLAUDE_EXIT_VM_TIME",
+                                                 "INSTRUMENTATION_STOP_VM_TIME",
+                                                 "VM_TIME_AFTER",
+                                                 "EVIDENCE_ZIP_PATH",
+                                                 "EVIDENCE_ZIP_SHA256",
+                                                 "DIRTY_SNAPSHOT_NAME",
+                                                 "DIRTY_SNAPSHOT_VM_TIME"
+                                             ],
+    "operator_checkpoints":  [
+                                 {
+                                     "key":  "CLAUDE_LAUNCH_VM_TIME",
+                                     "instruction":  "Open a terminal in the project directory, type `claude` (plus any launch_flags from this manifest), and press Enter here immediately after launching Claude."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_PROMPT_VISIBLE_VM_TIME",
+                                     "instruction":  "Press Enter when the Claude prompt is visible and ready for input."
+                                 },
+                                 {
+                                     "key":  "PROMPT1_SUBMITTED_VM_TIME",
+                                     "instruction":  "Paste the controlled prompt into Claude and press Enter here immediately after submitting it."
+                                 },
+                                 {
+                                     "key":  "PERMISSION_PROMPT",
+                                     "instruction":  "Record whether a permission prompt appeared, the full prompt text, and ALLOWED/DENIED/OTHER decision."
+                                 },
+                                 {
+                                     "key":  "AGENT_DONE_VM_TIME",
+                                     "instruction":  "Press Enter when Claude has completed the requested action. Keep Claude open."
+                                 },
+                                 {
+                                     "key":  "MEMORY_SNAPSHOT",
+                                     "instruction":  "Take VM memory snapshot now while Claude remains open. Enter the exact snapshot name when complete."
+                                 },
+                                 {
+                                     "key":  "CLAUDE_EXIT_VM_TIME",
+                                     "instruction":  "Exit Claude gracefully (type /exit), then press Enter."
+                                 }
+                             ],
+    "notes":  "DEPENDENCY: Run A07-MEMORY-DEFAULT immediately before this experiment WITHOUT\nreverting the snapshot, so that a prior session exists on the same VM state.\nThe controlled_prompt asks Claude to recall the memory marker from A07.\nIf it responds with CLAUDE_MEMORY_MARKER_R01 the session context was resumed.\n\nOPERATOR: At the Claude launch checkpoint, the command to type is:\n  claude --continue\nNOT just: claude\n\nThe forensic question: what in the .claude artifact set distinguishes\na --continue launch from a fresh launch? Look for session ID reuse,\nhistory.jsonl append vs new file, and any \u0027resumed_session\u0027 metadata.",
+    "script_schema":  "vmrun_automation_v1",
+    "manifest_file":  "manifests/CLAUDE-WIN-A-SESSION-CONTINUE-R01.json",
+    "probe_or_scenario":  "SESSION-CONTINUE"
+}
